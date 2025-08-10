@@ -35,7 +35,7 @@ void _safe_free(void *ptr);
 /**
  * @brief allocate aligned memory and assert on failure
  */
-#define allocate(obj, align, size) assert(posix_memalign((void **) &obj, align, size) == 0)
+#define allocate(obj, align, size) assert(size > 0); assert(posix_memalign((void **) &obj, align, size) == 0)
 
 /**
  * @brief vectorize a value

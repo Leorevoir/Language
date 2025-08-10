@@ -90,7 +90,7 @@ static void vector_ctor(Object *self_ptr, va_list *args)
     priv->_data = NULL;
     priv->_elem_dtor = va_arg(*args, void (*)(Object *));
 
-    if (priv->_capacity > 0) {
+    if (priv->_capacity > 0 && priv->_elem_size > 0) {
         allocate(priv->_data, C_VECTOR_ALIGNMENT, priv->_capacity * priv->_elem_size);
     }
 }
