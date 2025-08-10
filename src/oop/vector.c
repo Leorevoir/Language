@@ -31,6 +31,7 @@ static inline_ void vector_push_back(Vector *self, const Object *value)
         const size_t ns = nc * priv->_elem_size;
 
         priv->_data = realloc_aligned(priv->_data, os, ns, C_VECTOR_ALIGNMENT);
+        priv->_capacity = nc;
     }
 
     Object *dest = (char *) priv->_data + priv->_size * priv->_elem_size;
