@@ -31,27 +31,27 @@ target_include_directories(language PRIVATE
     ${CMAKE_SOURCE_DIR}/include
 )
 
-# target_compile_options(language PRIVATE
-#     -Wall
-#     -Wextra
-#     -Werror
-#     -pedantic
-#     -Wconversion
-#     -Wsign-conversion
-#     -Wshadow
-#     -Wnull-dereference
-#     -Wundef
-#     -Wuninitialized
-#     -Winit-self
-#     -Wredundant-decls
-#     -Wcast-align
-#     -Wcast-qual
-#     -Wmissing-declarations
-#     -Wswitch-default
-#     -Wdouble-promotion
-#     -Wformat=2
-#     -Wwrite-strings
-# )
+target_compile_options(language PRIVATE
+    -Wall
+    -Wextra
+    -Werror
+    -pedantic
+    -Wconversion
+    -Wsign-conversion
+    -Wshadow
+    -Wnull-dereference
+    -Wundef
+    -Wuninitialized
+    -Winit-self
+    -Wredundant-decls
+    -Wcast-align
+    -Wcast-qual
+    -Wmissing-declarations
+    -Wswitch-default
+    -Wdouble-promotion
+    -Wformat=2
+    -Wwrite-strings
+)
 
 option(ENABLE_DEBUG "Enable debug macros and flags" OFF)
 

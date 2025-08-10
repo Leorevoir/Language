@@ -42,7 +42,7 @@ static inline_ void vector_push_back(Vector *self, const Object *value)
 #if defined(__AVX2__)
     if (priv->_elem_size >= C_VECTOR_ALIGNMENT && ((uintptr_t) dest % C_VECTOR_ALIGNMENT == 0)) {
         __m256i *dst = (__m256i *) dest;
-        __m256i *src = (__m256i *) value;
+        const __m256i *src = (const __m256i *) value;
         _mm256_store_si256(dst, _mm256_loadu_si256(src));
     } else {
         memcpy(dest, value, priv->_elem_size);

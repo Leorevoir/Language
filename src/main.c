@@ -9,7 +9,7 @@ typedef struct {
 
 static void print_vec2f(const vec2f *v)
 {
-    printf("vec2f(%f, %f)\n", v->x, v->y);
+    printf("vec2f(%f, %f)\n", (double) v->x, (double) v->y);
 }
 
 int main(void)
