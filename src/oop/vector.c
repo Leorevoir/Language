@@ -27,10 +27,16 @@ static inline_ void vector_push_back(Vector *self, const Object *value)
     if (priv->_size >= priv->_capacity) {
 
         const size_t nc = vectorize(priv->_capacity);
-        const size_t os = priv->_size * priv->_elem_size;
         const size_t ns = nc * priv->_elem_size;
 
-        priv->_data = realloc_aligned(priv->_data, os, ns, C_VECTOR_ALIGNMENT);
+        if (priv->_elem_size < 32) {
+            priv->_data = realloc(priv->_data, ns);
+        } else {
+            const size_t os = priv->_size * priv->_elem_size;
+
+            priv->_data = realloc_aligned(priv->_data, os, ns, C_VECTOR_ALIGNMENT);
+        }
+
         priv->_capacity = nc;
     }
 
