@@ -1,7 +1,6 @@
-#include <mm_malloc.h>
 #include <rune/memory.h>
-#include <stdalign.h>
 #include <stdarg.h>
+#include <string.h>
 
 void _safe_free(void *ptr)
 {
@@ -64,4 +63,19 @@ void *_new(const Class *class, ...)
     class->__ctor__(obj, &args);
     va_end(args);
     return obj;
+}
+
+any _realloc_aligned(any old_ptr, size_t old_size, size_t new_size, size_t align)
+{
+    if (new_size <= old_size) {
+        return old_ptr;
+    }
+
+    any new_ptr;
+    allocate(new_ptr, align, new_size);
+    if (old_ptr) {
+        memcpy(new_ptr, old_ptr, old_size);
+        free(old_ptr);
+    }
+    return new_ptr;
 }

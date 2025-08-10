@@ -6,11 +6,21 @@
 #include <assert.h>
 #include <rune/interface.h>
 #include <rune/macros.h>
+#include <stdalign.h>
+#include <mm_malloc.h>
+
+#ifdef DEBUG
+    #include <stdint.h>
+    #define check_alignment(ptr, align) assert(((uintptr_t)(ptr) % (align)) == 0)
+#else
+    #define check_alignment(ptr, align)
+#endif
 
 void *_new(const Class *class, ...);
 void _delete(Object *obj);
 void _auto_delete(Object *obj_ptr);
-void _safe_free(void *ptr);
+void _safe_free(Object *ptr);
+any _realloc_aligned(any old_ptr, size_t old_size, size_t new_size, size_t align);
 
 /**
  * @brief create a new instance of a class
@@ -33,9 +43,20 @@ void _safe_free(void *ptr);
 #define auto_clean __attribute__((cleanup(_auto_delete)))
 
 /**
- * @brief allocate aligned memory and assert on failure
+ * @brief allocate memory for an object
+ * @details if SIMD alignment is required, use posix_memalign otherwise, use malloc bc malloc is less expensive
  */
-#define allocate(obj, align, size) assert(size > 0); assert(posix_memalign((void **) &obj, align, size) == 0)
+#define allocate(obj, align, size)                                                       \
+    if (align > alignof(void *))                                                         \
+        assert(posix_memalign((void **) &obj, align, size) == 0);                        \
+    else {                                                                               \
+        obj = malloc(size);                                                              \
+        assert(obj);                                                                     \
+    } \
+    check_alignment(obj, align)
+
+#define realloc_aligned(ptr, old_size, new_size, align) \
+    _realloc_aligned((any) ptr, old_size, new_size, align)
 
 /**
  * @brief vectorize a value

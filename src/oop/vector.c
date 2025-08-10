@@ -1,6 +1,7 @@
-#include <mm_malloc.h>
+#include <immintrin.h>
 #include <rune/memory.h>
 #include <rune/vector.h>
+#include <stdint.h>
 #include <string.h>
 
 static void vector_ctor(Object *self_ptr, va_list *args);
@@ -21,27 +22,35 @@ const_ const Class *Vector_getClass(void)
 
 static inline_ void vector_push_back(Vector *self, const Object *value)
 {
-    assert(value);
     struct _VectorData *priv = &self->_priv;
 
-    if (priv->_size == priv->_capacity) {
+    if (priv->_size >= priv->_capacity) {
 
-        const size_t new_cap = vectorize(priv->_capacity);
-        Object *new_data;
+        const size_t nc = vectorize(priv->_capacity);
+        const size_t os = priv->_size * priv->_elem_size;
+        const size_t ns = nc * priv->_elem_size;
 
-        allocate(new_data, C_VECTOR_ALIGNMENT, new_cap * priv->_elem_size);
-
-        if (priv->_data) {
-            memcpy(new_data, priv->_data, priv->_size * priv->_elem_size);
-            free(priv->_data);
-        }
-
-        priv->_data = new_data;
-        priv->_capacity = new_cap;
+        priv->_data = realloc_aligned(priv->_data, os, ns, C_VECTOR_ALIGNMENT);
     }
 
     Object *dest = (char *) priv->_data + priv->_size * priv->_elem_size;
+
+    /**
+    * TODO: __m512i support for AVX-512F & __m128i for AVX-128 for faster vectorization
+    */
+
+#if defined(__AVX2__)
+    if (priv->_elem_size >= C_VECTOR_ALIGNMENT && ((uintptr_t) dest % C_VECTOR_ALIGNMENT == 0)) {
+        __m256i *dst = (__m256i *) dest;
+        __m256i *src = (__m256i *) value;
+        _mm256_store_si256(dst, _mm256_loadu_si256(src));
+    } else {
+        memcpy(dest, value, priv->_elem_size);
+    }
+#else
     memcpy(dest, value, priv->_elem_size);
+#endif
+
     ++priv->_size;
 }
 
