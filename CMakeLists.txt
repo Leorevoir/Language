@@ -20,35 +20,39 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 file(GLOB_RECURSE SRC_FILES "src/*.c")
 add_executable(language ${SRC_FILES})
 
+target_link_libraries(language PRIVATE 
+    pthread
+)
+
 target_include_directories(language PRIVATE
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/include
 )
 
-target_compile_options(language PRIVATE
-    -Wall
-    -Wextra
-    -Werror
-    -pedantic
-    -Wconversion
-    -Wsign-conversion
-    -Wshadow
-    -Wnull-dereference
-    -Wundef
-    -Wuninitialized
-    -Winit-self
-    -Wredundant-decls
-    -Wcast-align
-    -Wcast-qual
-    -Wmissing-declarations
-    -Wswitch-default
-    -Wdouble-promotion
-    -Wformat=2
-    -Wwrite-strings
-)
+# target_compile_options(language PRIVATE
+#     -Wall
+#     -Wextra
+#     -Werror
+#     -pedantic
+#     -Wconversion
+#     -Wsign-conversion
+#     -Wshadow
+#     -Wnull-dereference
+#     -Wundef
+#     -Wuninitialized
+#     -Winit-self
+#     -Wredundant-decls
+#     -Wcast-align
+#     -Wcast-qual
+#     -Wmissing-declarations
+#     -Wswitch-default
+#     -Wdouble-promotion
+#     -Wformat=2
+#     -Wwrite-strings
+# )
 
 option(ENABLE_DEBUG "Enable debug macros and flags" OFF)
 
 if(ENABLE_DEBUG)
-    target_compile_definitions(vulkan_engine PRIVATE DEBUG=1)
+    target_compile_definitions(language PRIVATE DEBUG=1)
 endif()
