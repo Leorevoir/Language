@@ -12,7 +12,8 @@ static const Class vector_class = {
     .__size__ = sizeof(Vector),
     .__name__ = "Vector",
     .__ctor__ = vector_ctor,
-    .__dtor__ = vector_dtor};
+    .__dtor__ = vector_dtor
+};
 // clang-format on
 
 const_ const Class *Vector_getClass(void)
