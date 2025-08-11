@@ -8,6 +8,7 @@
 #include <rune/macros.h>
 #include <stdalign.h>
 #include <mm_malloc.h>
+#include <stdio.h>
 
 #ifdef DEBUG
     #include <stdint.h>
@@ -77,5 +78,19 @@ static inline_ void _defer_null(void *ptr)
 * @details  set the pointer to NULL at the end of the scope
  */
 #define defer_null __attribute__((cleanup(_defer_null)))
+
+static inline void _fclose(void *ptr)
+{
+    defer_null FILE **file_ptr = (FILE **) ptr;
+
+    if (*file_ptr) {
+        fclose(*file_ptr);
+    }
+}
+
+/**
+ * @brief auto fclose an io file pointer
+ */
+#define auto_fclose __attribute__((cleanup(_fclose)))
 
 #endif /* C_MEMORY_H_ */

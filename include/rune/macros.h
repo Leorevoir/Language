@@ -5,6 +5,10 @@
     #define inline_ inline
 #endif
 
+#ifndef force_inline_
+    #define force_inline_ __attribute__((always_inline, hot))
+#endif
+
 #ifndef aligned_
     #define aligned_(n) __attribute__((aligned(n)))
 #endif
