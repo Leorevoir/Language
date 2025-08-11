@@ -1,7 +1,8 @@
-#include "rune/memory.h"
 #include <assert.h>
-#include <rune/parser.h>
 #include <stdbool.h>
+
+#include <rune/parser.h>
+#include <rune/string.h>
 
 static void parser_ctor(Object *self_ptr, va_list *args);
 static void parser_dtor(Object *self_ptr);
@@ -20,13 +21,67 @@ const_ const Class *Parser_getClass(void)
     return &vector_class;
 }
 
+// clang-format off
+
+static const char *KEYWORDS[] = {
+    "function",
+    "if"
+    "elif"
+    "else"
+    "for"
+    "foreach"
+    "then"
+    "do"
+};
+
+static const char  DELIMITERS[] = {' ', ',', ';', '(', ')', '[', ']', '{', '}', '\0'};
+
+static const char  OPERATORS[] = {'+', '-', '*', '/', '>', '<', '=', '%', '\0'};
+
+// clang-format on
+
 /**
 * public
 */
 
-static void parser_parse(Parser *self)
+static void parser_collect_tokens(Parser *self)
 {
-    (void) self;
+    size_t left = 0;
+    size_t right = 0;
+    const struct _IO *io = &self->_io;
+
+    while (right <= (size_t) self->_io.st.st_size && left <= right) {
+
+        if (!contains_char(io->buffer[right], DELIMITERS)) {
+            ++right;
+            continue;
+        }
+
+        if (left == right) {
+            if (contains_char(io->buffer[right], OPERATORS)) {
+                //add token TOKEN_OPERATOR
+            } else if (contains_char(io->buffer[right], DELIMITERS) && io->buffer[right] != ' ') {
+                //add token TOKEN_DELIMITER
+            }
+
+            ++right;
+            left = right;
+            continue;
+        }
+
+        auto_free const char *substr = substring(io->buffer, left, right - 1);
+
+        if (contains_any(substr, KEYWORDS)) {
+            // add token TOKEN_KEYWORD
+        } else if (contains_str(substr, OPERATORS)) {
+            // add token TOKEN_NUMBER
+        } else if (contains_str(substr, DELIMITERS)) {
+            // add token TOKEN_IDENTIFIER
+        } else {
+            // add token TOKEN_INVALID
+        }
+        left = right;
+    }
 }
 
 /**
@@ -66,18 +121,19 @@ static void parser_ctor(Object *self_ptr, va_list *args)
     struct _IO *io = &self->_io;
 
     self->class = Parser_getClass();
-    self->parse = parser_parse;
+    self->collect_tokens = parser_collect_tokens;
     io->filename = va_arg(*args, char *);
     assert(_does_exist(io) == true);
 
-    auto_free const char *buffer = _allocate_buffer(io);
+    io->buffer = _allocate_buffer(io);
 
     self->_tokens = (Vector *) new (Vector_getClass(), sizeof(struct _Token), 32, NULL);
 
-    printf("buffer:\n_______\n%s", buffer);
+    printf("buffer:\n_______\n%s", io->buffer);
 }
 
 static void parser_dtor(Object *self_ptr)
 {
+    auto_free const char *buffer = (const char *) ((Parser *) self_ptr)->_io.buffer;
     delete ((Vector *) ((Parser *) self_ptr)->_tokens);
 }

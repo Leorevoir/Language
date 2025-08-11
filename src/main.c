@@ -1,9 +1,11 @@
 #include <rune/memory.h>
 #include <rune/parser.h>
 
-int main(int unused_ argc, const char **argv)
+int main(void)
 {
-    auto_clean Parser *parser = new (ParserClass, argv[1]);
+    auto_clean Parser *parser = new (ParserClass, "examples/example.rune");
+
+    parser->collect_tokens(parser);
 
     return 0;
 }
