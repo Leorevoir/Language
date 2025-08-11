@@ -3,9 +3,9 @@
 
 #include <rune/interface.h>
 #include <rune/macros.h>
+#include <rune/vector.h>
 
 #include <stdint.h>
-#include <stdio.h>
 #include <sys/stat.h>
 
 // clang-format off
@@ -44,13 +44,6 @@ struct _Token {
     char *value;
 };
 
-struct _TokenList {
-    struct Token *list;
-
-    uint64_t count;
-    uint64_t capacity;
-};
-
 struct _IO {
     const char *filename;
     struct stat st;
@@ -59,7 +52,9 @@ struct _IO {
 typedef struct Parser {
     const Class *class;
 
-    struct _TokenList _tokens;
+    void (*parse)(struct Parser *self);
+
+    Vector *_tokens;
     struct _IO _io;
 } Parser;
 

@@ -24,11 +24,16 @@ const_ const Class *Parser_getClass(void)
 * public
 */
 
+static void parser_parse(Parser *self)
+{
+    (void) self;
+}
+
 /**
 * private
 */
 
-static inline bool _does_exist(struct _IO *io)
+const_ static inline bool _does_exist(struct _IO *io)
 {
     return (stat(io->filename, &io->st) == 0 && S_ISREG(io->st.st_mode));
 }
@@ -61,15 +66,18 @@ static void parser_ctor(Object *self_ptr, va_list *args)
     struct _IO *io = &self->_io;
 
     self->class = Parser_getClass();
+    self->parse = parser_parse;
     io->filename = va_arg(*args, char *);
     assert(_does_exist(io) == true);
 
     auto_free const char *buffer = _allocate_buffer(io);
 
+    self->_tokens = (Vector *) new (Vector_getClass(), sizeof(struct _Token), 32, NULL);
+
     printf("buffer:\n_______\n%s", buffer);
 }
 
-static void parser_dtor(Object unused_ *self_ptr)
+static void parser_dtor(Object *self_ptr)
 {
-    /* __nothing__ */
+    delete ((Vector *) ((Parser *) self_ptr)->_tokens);
 }
