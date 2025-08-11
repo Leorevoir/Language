@@ -8,6 +8,17 @@
 #include <stddef.h>
 #include <string.h>
 
+static const_ inline_ bool _is_digits_impl(const char *str)
+{
+    while (*str) {
+        if (*str < '0' || *str > '9') {
+            return false;
+        }
+        str++;
+    }
+    return true;
+}
+
 static const_ inline_ bool _contains_char_impl(const char item, const char *container)
 {
     for (size_t i = 0; container[i] != '\0'; ++i) {
@@ -43,6 +54,8 @@ static const_ inline_ bool _contains_any_impl(const char *item, const char **con
 #define contains_char(item, container) _contains_char_impl(item, container)
 #define contains_str(item, container) _contains_string_impl(item, container)
 #define contains_any(item, container) _contains_any_impl(item, container)
+
+#define is_digits(str) _is_digits_impl(str)
 
 static pure_ inline_ const char *_substring_impl(const char *str, const size_t start,
     const size_t end)

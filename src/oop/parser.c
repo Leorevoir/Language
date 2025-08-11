@@ -4,6 +4,11 @@
 #include <rune/parser.h>
 #include <rune/string.h>
 
+#ifndef C_STRDUP_DEFINED
+    #define C_STRDUP_DEFINED
+char *strdup(const char *s);
+#endif /* C_STRDUP_DEFINED */
+
 static void parser_ctor(Object *self_ptr, va_list *args);
 static void parser_dtor(Object *self_ptr);
 
@@ -44,6 +49,33 @@ static const char  OPERATORS[] = {'+', '-', '*', '/', '>', '<', '=', '%', '\0'};
 * public
 */
 
+const_ static inline_ const char *token_type_to_string(enum _TokenType type)
+{
+    switch (type) {
+        case TOKEN_EOF:
+            return "TOKEN_EOF";
+        case TOKEN_OPERATOR:
+            return "TOKEN_OPERATOR";
+        case TOKEN_DELIMITER:
+            return "TOKEN_DELIMITER";
+        case TOKEN_KEYWORD:
+            return "TOKEN_KEYWORD";
+        case TOKEN_IDENTIFIER:
+            return "TOKEN_IDENTIFIER";
+        case TOKEN_NUMBER:
+            return "TOKEN_NUMBER";
+        case TOKEN_INVALID:
+            return "TOKEN_INVALID";
+        default:
+            return "UNKNOWN_TOKEN_TYPE";
+    }
+}
+
+static inline_ void push_token(Vector **out_tokens, const enum _TokenType type, const char *value)
+{
+    (*out_tokens)->push_back(*out_tokens, &(struct _Token) {.type = type, .value = strdup(value)});
+}
+
 static void parser_collect_tokens(Parser *self)
 {
     size_t left = 0;
@@ -58,10 +90,13 @@ static void parser_collect_tokens(Parser *self)
         }
 
         if (left == right) {
+
             if (contains_char(io->buffer[right], OPERATORS)) {
-                //add token TOKEN_OPERATOR
+                char val[2] = {io->buffer[right], '\0'};
+                push_token(&self->_tokens, TOKEN_OPERATOR, val);
             } else if (contains_char(io->buffer[right], DELIMITERS) && io->buffer[right] != ' ') {
-                //add token TOKEN_DELIMITER
+                char val[2] = {io->buffer[right], '\0'};
+                push_token(&self->_tokens, TOKEN_DELIMITER, val);
             }
 
             ++right;
@@ -69,19 +104,22 @@ static void parser_collect_tokens(Parser *self)
             continue;
         }
 
-        auto_free const char *substr = substring(io->buffer, left, right - 1);
+        auto_free const char *substr = (const char *) substring(io->buffer, left, right - 1);
 
         if (contains_any(substr, KEYWORDS)) {
-            // add token TOKEN_KEYWORD
-        } else if (contains_str(substr, OPERATORS)) {
-            // add token TOKEN_NUMBER
+            push_token(&self->_tokens, TOKEN_KEYWORD, substr);
+        } else if (is_digits(substr)) {
+            push_token(&self->_tokens, TOKEN_NUMBER, substr);
         } else if (contains_str(substr, DELIMITERS)) {
-            // add token TOKEN_IDENTIFIER
+            push_token(&self->_tokens, TOKEN_DELIMITER, substr);
         } else {
-            // add token TOKEN_INVALID
+            push_token(&self->_tokens, TOKEN_INVALID, substr);
         }
         left = right;
     }
+
+    vector_for_each(self->_tokens, struct _Token, t,
+        printf("token: %s, type: %s\n", t->value, token_type_to_string(t->type)));
 }
 
 /**
