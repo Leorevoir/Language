@@ -18,8 +18,9 @@ enum _TokenType {
 };
 
 struct _Token {
-    enum _TokenType type;
-    char *value;
+    const enum _TokenType type;
+    const char *value;
+    const size_t length;
 };
 
 struct _IO {

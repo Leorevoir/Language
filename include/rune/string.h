@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <string.h>
 
-static const_ inline_ bool _is_digits_impl(const char *str)
+const_ static inline_ bool _is_digits_impl(const char *str)
 {
     while (*str) {
         if (*str < '0' || *str > '9') {
@@ -19,7 +19,7 @@ static const_ inline_ bool _is_digits_impl(const char *str)
     return true;
 }
 
-static const_ inline_ bool _contains_char_impl(const char item, const char *container)
+const_ static inline_ bool _contains_char_impl(const char item, const char *container)
 {
     for (size_t i = 0; container[i] != '\0'; ++i) {
         if (item == container[i]) {
@@ -29,7 +29,7 @@ static const_ inline_ bool _contains_char_impl(const char item, const char *cont
     return false;
 }
 
-static const_ inline_ bool _contains_string_impl(const char *item, const char *container)
+const_ static inline_ bool _contains_string_impl(const char *item, const char *container)
 {
     const size_t item_len = strlen(item);
 
@@ -41,19 +41,21 @@ static const_ inline_ bool _contains_string_impl(const char *item, const char *c
     return false;
 }
 
-static const_ inline_ bool _contains_any_impl(const char *item, const char **container)
+const_ static inline_ bool _contains_any_impl(const char *item, size_t len, const char **container)
 {
     for (size_t i = 0; container[i] != NULL; ++i) {
-        if (_contains_string_impl(item, container[i])) {
+        if (strlen(container[i]) == len && strncmp(item, container[i], len) == 0) {
             return true;
         }
     }
     return false;
 }
 
+#define contains_any(item, len, container) _contains_any_impl(item, len, container)
+
 #define contains_char(item, container) _contains_char_impl(item, container)
 #define contains_str(item, container) _contains_string_impl(item, container)
-#define contains_any(item, container) _contains_any_impl(item, container)
+#define contains_any(item, len, container) _contains_any_impl(item, len, container)
 
 #define is_digits(str) _is_digits_impl(str)
 
