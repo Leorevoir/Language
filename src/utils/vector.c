@@ -1,6 +1,7 @@
-#include <immintrin.h>
 #include <rune/memory.h>
 #include <rune/vector.h>
+
+#include <immintrin.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -62,9 +63,11 @@ static inline_ void vector_push_back(Vector *self, const Object *value)
     ++priv->_size;
 }
 
-pure_ static inline_ Object *vector_at(Vector *self, const size_t index)
+pure_ static inline_ any vector_at(const Vector *self, const size_t index)
 {
-    assert(index < self->_priv._size);
+    if (index >= self->_priv._size) {
+        return NULL;
+    }
     return (char *) self->_priv._data + index * self->_priv._elem_size;
 }
 

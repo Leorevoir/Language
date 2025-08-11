@@ -1,27 +1,9 @@
 #ifndef C_PARSER_H_
 #define C_PARSER_H_
 
-#include <rune/interface.h>
-#include <rune/macros.h>
 #include <rune/vector.h>
 
 #include <sys/stat.h>
-
-enum _TokenType {
-    TOKEN_KEYWORD,
-    TOKEN_IDENTIFIER,
-    TOKEN_NUMBER,
-    TOKEN_OPERATOR,
-    TOKEN_DELIMITER,
-    TOKEN_INVALID,
-    TOKEN_EOF
-};
-
-struct _Token {
-    const enum _TokenType type;
-    const char *value;
-    const size_t length;
-};
 
 struct _IO {
     const char *filename;

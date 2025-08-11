@@ -1,5 +1,6 @@
+#include <rune/compiler/compiler.h>
+#include <rune/compiler/parser.h>
 #include <rune/memory.h>
-#include <rune/parser.h>
 
 int main(void)
 {
@@ -7,5 +8,8 @@ int main(void)
 
     parser->collect_tokens(parser);
 
+    auto_clean Compiler *compiler = new (CompilerClass, parser->_tokens);
+
+    compiler->compile(compiler);
     return 0;
 }

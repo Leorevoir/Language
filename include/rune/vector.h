@@ -22,7 +22,7 @@ typedef struct Vector {
     const Class *class;
 
     void (*push_back)(struct Vector *self, const Object *value);
-    Object *(*at)(struct Vector *self, const size_t index);
+    any (*at)(const struct Vector *self, const size_t index);
 
     size_t (*size)(struct Vector *self);
 

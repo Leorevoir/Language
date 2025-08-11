@@ -27,7 +27,6 @@ target_link_libraries(language PRIVATE
 target_compile_options(language PRIVATE -mavx2)
 
 target_include_directories(language PRIVATE
-    ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/include
 )
 

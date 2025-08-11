@@ -2,25 +2,17 @@
 #include <ctype.h>
 #include <stdbool.h>
 
-#include <rune/memory.h>
-#include <rune/parser.h>
+#include <rune/compiler/parser.h>
+#include <rune/compiler/tokens.h>
+
 #include <rune/string.h>
 #include <rune/vector.h>
-
-#ifndef C_STRDUP_DEFINED
-    #define C_STRDUP_DEFINED
-/**
-* @brief C standard library signature bc idk why the hell gcc tells me its not defined
-*/
-char *strdup(const char *s);
-char *strndup(const char *s, size_t n);
-#endif /* C_STRDUP_DEFINED */
 
 static void parser_ctor(Object *self_ptr, va_list *args);
 static void parser_dtor(Object *self_ptr);
 
 // clang-format off
-static const Class vector_class = {
+static const Class parser_class = {
     .__size__ = sizeof(Parser),
     .__name__ = "Parser",
     .__ctor__ = parser_ctor,
@@ -30,7 +22,7 @@ static const Class vector_class = {
 
 const_ const Class *Parser_getClass(void)
 {
-    return &vector_class;
+    return &parser_class;
 }
 
 // clang-format off
@@ -74,14 +66,6 @@ const_ static inline_ const char *token_type_to_string(enum _TokenType type)
         default:
             return "UNKNOWN_TOKEN_TYPE";
     }
-}
-
-const_ static inline_ bool is_valid_identifier(const char *str, size_t len)
-{
-    if (len == 0 || isdigit(str[0]) || contains_char(str[0], DELIMITERS)) {
-        return false;
-    }
-    return true;
 }
 
 static inline_ void push_token(Vector **out_tokens, const enum _TokenType type, const char *value,
@@ -142,7 +126,7 @@ static void parser_collect_tokens(Parser *self)
             push_token(&self->_tokens, TOKEN_KEYWORD, substr, len);
         } else if (is_digits(substr)) {
             push_token(&self->_tokens, TOKEN_NUMBER, substr, len);
-        } else if (is_valid_identifier(substr, len)) {
+        } else if (len == 0 || isdigit(substr[0]) || contains_char(substr[0], DELIMITERS)) {
             push_token(&self->_tokens, TOKEN_IDENTIFIER, substr, len);
         } else {
             push_token(&self->_tokens, TOKEN_INVALID, substr, len);
@@ -198,7 +182,9 @@ static void parser_ctor(Object *self_ptr, va_list *args)
     io->buffer = _allocate_buffer(io);
     self->_tokens = (Vector *) new (Vector_getClass(), sizeof(struct _Token), 32, NULL);
 
+#if defined(DEBUG)
     printf("buffer:\n_______\n%s", io->buffer);
+#endif
 }
 
 static void parser_dtor(Object *self_ptr)
