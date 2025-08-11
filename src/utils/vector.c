@@ -17,6 +17,10 @@ static const Class vector_class = {
 };
 // clang-format on
 
+/**
+ * public
+ */
+
 const_ const Class *Vector_getClass(void)
 {
     return &vector_class;
@@ -71,7 +75,12 @@ pure_ static inline_ any vector_at(const Vector *self, const size_t index)
     return (char *) self->_priv._data + index * self->_priv._elem_size;
 }
 
-const_ static inline_ size_t vector_size(Vector *self)
+const_ static inline_ any vector_data(const Vector *self)
+{
+    return self->_priv._data;
+}
+
+const_ static inline_ size_t vector_size(const Vector *self)
 {
     return self->_priv._size;
 }
@@ -92,6 +101,10 @@ pure_ static inline_ Iterator *vector_end(Vector *self)
     return (Iterator *) new (Iterator_getClass(), end_ptr, end_ptr, priv._elem_size);
 }
 
+/**
+* private
+*/
+
 static void vector_ctor(Object *self_ptr, va_list *args)
 {
     Vector *self = (Vector *) self_ptr;
@@ -100,6 +113,7 @@ static void vector_ctor(Object *self_ptr, va_list *args)
     self->class = Vector_getClass();
     self->push_back = vector_push_back;
     self->at = vector_at;
+    self->data = vector_data;
     self->size = vector_size;
     self->begin = vector_begin;
     self->end = vector_end;

@@ -6,12 +6,16 @@
 
 #include <rune/compiler/tokens.h>
 
+struct _CompilerData {
+    const struct _Token *_data;
+    size_t _size;
+};
+
 typedef struct Compiler {
     const Class *class;
 
     void (*compile)(struct Compiler *self);
-
-    const struct _Token *_tokens;
+    struct _CompilerData _token;
 } Compiler;
 
 const_ const Class *Compiler_getClass(void);

@@ -23,8 +23,9 @@ typedef struct Vector {
 
     void (*push_back)(struct Vector *self, const Object *value);
     any (*at)(const struct Vector *self, const size_t index);
+    any (*data)(const struct Vector *self);
 
-    size_t (*size)(struct Vector *self);
+    size_t (*size)(const struct Vector *self);
 
     Iterator *(*begin)(struct Vector *self);
     Iterator *(*end)(struct Vector *self);

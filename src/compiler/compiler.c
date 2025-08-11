@@ -1,4 +1,5 @@
 #include <rune/compiler/compiler.h>
+#include <rune/vector.h>
 
 static void compiler_ctor(Object *self_ptr, va_list *args);
 static void compiler_dtor(Object *self_ptr);
@@ -21,12 +22,9 @@ const_ const Class *Compiler_getClass(void)
 * public
 */
 
-#include <stdio.h>
-
-static void compiler_compile(Compiler *self)
+static void compiler_compile(Compiler unused_ *self)
 {
-    (void) self;
-    printf("\n\ncompiler_compile called\n");
+    //
 }
 
 /**
@@ -36,11 +34,13 @@ static void compiler_compile(Compiler *self)
 static void compiler_ctor(Object *self_ptr, va_list *args)
 {
     Compiler *self = (Compiler *) self_ptr;
+    const Vector *vec = va_arg(*args, const Vector *);
 
     self->class = Compiler_getClass();
     self->compile = compiler_compile;
 
-    self->_tokens = va_arg(*args, const struct _Token *);
+    self->_token._data = (const struct _Token *) vec->data(vec);
+    self->_token._size = vec->size(vec);
 }
 
 static void compiler_dtor(Object unused_ *self_ptr)
