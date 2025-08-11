@@ -1,8 +1,26 @@
 #ifndef C_PARSER_H_
 #define C_PARSER_H_
 
-#include <rune/compiler/tokens.h>
+#include <rune/vector.h>
 
-void _parse_keyword(const struct _Token *token);
+#include <sys/stat.h>
 
-#endif /* C_PARSER_H */
+struct _IO {
+    const char *filename;
+    const char *buffer;
+    struct stat st;
+};
+
+typedef struct Parser {
+    const Class *class;
+
+    void (*collect_tokens)(struct Parser *self);
+
+    Vector *_tokens;
+    struct _IO _io;
+} Parser;
+
+const_ const Class *Parser_getClass(void);
+#define ParserClass Parser_getClass()
+
+#endif /* C_PARSER_H_ */
