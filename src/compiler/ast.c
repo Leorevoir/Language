@@ -2,26 +2,25 @@
 #include <ctype.h>
 #include <stdbool.h>
 
-#include <rune/compiler/parser.h>
+#include <rune/compiler/ast.h>
 #include <rune/compiler/tokens.h>
-
 #include <rune/string.h>
 #include <rune/vector.h>
 
-static void parser_ctor(Object *self_ptr, va_list *args);
-static void parser_dtor(Object *self_ptr);
+static void ast_ctor(Object *self_ptr, va_list *args);
+static void ast_dtor(Object *self_ptr);
 
 // clang-format off
-static const Class parser_class = {
-    .__size__ = sizeof(Parser),
-    .__name__ = "Parser",
-    .__ctor__ = parser_ctor,
-    .__dtor__ = parser_dtor
+static const Class ast_class = {
+    .__size__ = sizeof(AST),
+    .__name__ = "AST",
+    .__ctor__ = ast_ctor,
+    .__dtor__ = ast_dtor
 };
 
-const_ const Class *Parser_getClass(void)
+const_ const Class *AST_getClass(void)
 {
-    return &parser_class;
+    return &ast_class;
 }
 
 static const char *KEYWORDS[] = {
@@ -40,9 +39,9 @@ static const char DELIMITERS[] = {' ', ',', ';', '(', ')', '[', ']', '{', '}', '
 static const char OPERATORS[] = {'+', '-', '*', '/', '>', '<', '=', '%', '\0'};
 // clang-format on
 
-/*
- * helpers
- */
+/**
+* helpers
+*/
 
 #if defined(DEBUG)
 const_ static inline_ const char *token_type_to_string(enum _TokenType type)
@@ -76,10 +75,10 @@ static inline_ void push_token(Vector **out_tokens, const enum _TokenType type, 
 }
 
 /**
- * public
- */
+* public
+*/
 
-static void parser_collect_tokens(Parser *self)
+static void ast_collect_tokens(AST *self)
 {
     size_t left = 0;
     size_t right = 0;
@@ -145,8 +144,8 @@ static void parser_collect_tokens(Parser *self)
 }
 
 /**
- * private
- */
+* private
+*/
 
 const_ static inline_ bool _does_exist(struct _IO *io)
 {
@@ -171,26 +170,31 @@ pure_ static inline_ const char *_allocate_buffer(struct _IO *io)
     return buffer;
 }
 
-static void parser_ctor(Object *self_ptr, va_list *args)
+static void ast_ctor(Object *self_ptr, va_list *args)
 {
-    Parser *self = (Parser *) self_ptr;
+    AST *self = (AST *) self_ptr;
     struct _IO *io = &self->_io;
 
-    self->class = Parser_getClass();
-    self->collect_tokens = parser_collect_tokens;
+    self->class = AST_getClass();
+    self->collect_tokens = ast_collect_tokens;
     io->filename = va_arg(*args, char *);
     assert(_does_exist(io) == true);
 
     io->buffer = _allocate_buffer(io);
     self->_tokens = (Vector *) new (Vector_getClass(), sizeof(struct _Token), 32, NULL);
+    self->_nodes = (Vector *) new (Vector_getClass(), sizeof(struct ASTNode *), 32, NULL);
 
 #if defined(DEBUG)
-    printf("buffer:\n_______\n%s", io->buffer);
+    printf("__BEGIN__\n%s__EOF__\n", io->buffer);
 #endif
 }
 
-static void parser_dtor(Object *self_ptr)
+static void ast_dtor(Object *self_ptr)
 {
-    auto_free const char *buffer = (const char *) ((Parser *) self_ptr)->_io.buffer;
-    delete ((Vector *) ((Parser *) self_ptr)->_tokens);
+    AST *self = (AST *) self_ptr;
+
+    vector_for_each(self->_nodes, struct ASTNode *, node, { auto_free struct ASTNode *n = *node; });
+    delete ((Vector *) self->_nodes);
+    auto_free const char *buffer = (const char *) self->_io.buffer;
+    delete ((Vector *) self->_tokens);
 }

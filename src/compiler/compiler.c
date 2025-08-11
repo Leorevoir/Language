@@ -1,5 +1,5 @@
+#include <rune/compiler/ast.h>
 #include <rune/compiler/compiler.h>
-#include <rune/compiler/parser.h>
 
 #include <rune/memory.h>
 #include <rune/vector.h>

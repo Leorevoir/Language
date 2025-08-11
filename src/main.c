@@ -1,15 +1,18 @@
+#include <rune/compiler/ast.h>
 #include <rune/compiler/compiler.h>
-#include <rune/compiler/parser.h>
 #include <rune/memory.h>
 
 int main(void)
 {
-    auto_clean Parser *ast = new (ParserClass, "examples/example.rune");
+    auto_clean AST *ast = new (ASTClass, "examples/example.rune");
 
     ast->collect_tokens(ast);
-
-    auto_clean Compiler *compiler = new (CompilerClass, ast->_tokens);
-
-    compiler->compile(compiler);
+    // auto_clean Parser *parser = new (ParserClass, "examples/example.rune");
+    //
+    // parser->collect_tokens(parser);
+    //
+    // auto_clean Compiler *compiler = new (CompilerClass, ast->_tokens);
+    //
+    // compiler->compile(compiler);
     return 0;
 }
