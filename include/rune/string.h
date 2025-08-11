@@ -8,15 +8,14 @@
 #include <stddef.h>
 #include <string.h>
 
-const_ static inline_ bool _is_digits_impl(const char *str)
+const_ static inline_ bool _is_digits_impl(const char *str, size_t len)
 {
-    while (*str) {
-        if (*str < '0' || *str > '9') {
+    for (size_t i = 0; i < len; i++) {
+        if (str[i] < '0' || str[i] > '9') {
             return false;
         }
-        str++;
     }
-    return true;
+    return len > 0;
 }
 
 const_ static inline_ bool _contains_char_impl(const char item, const char *container)
@@ -41,23 +40,21 @@ const_ static inline_ bool _contains_string_impl(const char *item, const char *c
     return false;
 }
 
-const_ static inline_ bool _contains_any_impl(const char *item, size_t len, const char **container)
+const_ static inline_ bool _contains_any_impl(const char *item, size_t len, const char **keywords)
 {
-    for (size_t i = 0; container[i] != NULL; ++i) {
-        if (strlen(container[i]) == len && strncmp(item, container[i], len) == 0) {
+    for (size_t i = 0; keywords[i] != NULL; ++i) {
+        if (strlen(keywords[i]) == len && strncmp(item, keywords[i], len) == 0) {
             return true;
         }
     }
     return false;
 }
 
-#define contains_any(item, len, container) _contains_any_impl(item, len, container)
-
 #define contains_char(item, container) _contains_char_impl(item, container)
 #define contains_str(item, container) _contains_string_impl(item, container)
-#define contains_any(item, len, container) _contains_any_impl(item, len, container)
+#define contains_any(substr, len, keywords) _contains_any_impl(substr, len, keywords)
 
-#define is_digits(str) _is_digits_impl(str)
+#define is_digits(str, len) _is_digits_impl(str, len)
 
 static pure_ inline_ const char *_substring_impl(const char *str, const size_t start,
     const size_t end)

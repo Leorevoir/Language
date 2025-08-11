@@ -1,5 +1,10 @@
 #include <rune/compiler/compiler.h>
+#include <rune/compiler/parser.h>
+
+#include <rune/memory.h>
 #include <rune/vector.h>
+
+#include <stddef.h>
 
 static void compiler_ctor(Object *self_ptr, va_list *args);
 static void compiler_dtor(Object *self_ptr);
@@ -19,12 +24,47 @@ const_ const Class *Compiler_getClass(void)
 }
 
 /**
+ * private
+ */
+
+struct ByteCodeChunk {
+    Vector *code;
+    Vector *constants;
+};
+
+typedef char *Symbol;
+
+/**
 * public
 */
 
 static void compiler_compile(Compiler unused_ *self)
 {
-    //
+    size_t cursor = 0;
+    while (cursor < self->_token._size) {
+        const struct _Token *token = &self->_token._data[cursor];
+
+        switch (token->type) {
+            case TOKEN_KEYWORD:
+                ++cursor;
+                break;
+            case TOKEN_NUMBER:
+                ++cursor;
+                break;
+            case TOKEN_OPERATOR:
+                ++cursor;
+                break;
+            case TOKEN_IDENTIFIER:
+                ++cursor;
+                break;
+            case TOKEN_DELIMITER:
+                ++cursor;
+                break;
+            default:
+                ++cursor;
+                break;
+        }
+    }
 }
 
 /**
