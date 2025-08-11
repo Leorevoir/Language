@@ -118,12 +118,7 @@ static void vector_dtor(Object *self_ptr)
     struct _VectorData *priv = &self->_priv;
 
     if (priv->_elem_dtor) {
-
-        for (size_t i = 0; i < priv->_size; ++i) {
-
-            Object *element = (char *) priv->_data + i * priv->_elem_size;
-            priv->_elem_dtor(element);
-        }
+        vector_for_each(self, any, __obj, { priv->_elem_dtor(__obj); });
     }
 
     free(priv->_data);
