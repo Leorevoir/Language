@@ -40,31 +40,7 @@ typedef char *Symbol;
 
 static void compiler_compile(Compiler unused_ *self)
 {
-    size_t cursor = 0;
-    while (cursor < self->_token._size) {
-        const struct _Token *token = &self->_token._data[cursor];
-
-        switch (token->type) {
-            case TOKEN_KEYWORD:
-                ++cursor;
-                break;
-            case TOKEN_NUMBER:
-                ++cursor;
-                break;
-            case TOKEN_OPERATOR:
-                ++cursor;
-                break;
-            case TOKEN_IDENTIFIER:
-                ++cursor;
-                break;
-            case TOKEN_DELIMITER:
-                ++cursor;
-                break;
-            default:
-                ++cursor;
-                break;
-        }
-    }
+    //
 }
 
 /**

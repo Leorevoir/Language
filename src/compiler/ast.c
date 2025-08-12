@@ -3,7 +3,9 @@
 #include <stdbool.h>
 
 #include <rune/compiler/ast.h>
+#include <rune/compiler/parser/parser.h>
 #include <rune/compiler/tokens.h>
+
 #include <rune/string.h>
 #include <rune/vector.h>
 
@@ -17,27 +19,12 @@ static const Class ast_class = {
     .__ctor__ = ast_ctor,
     .__dtor__ = ast_dtor
 };
+// clang-format on
 
 const_ const Class *AST_getClass(void)
 {
     return &ast_class;
 }
-
-static const char *KEYWORDS[] = {
-    "function",
-    "if",
-    "elif",
-    "else",
-    "for",
-    "foreach",
-    "then",
-    "do"
-};
-
-static const char DELIMITERS[] = {' ', ',', ';', '(', ')', '[', ']', '{', '}', '\n', '\0'};
-
-static const char OPERATORS[] = {'+', '-', '*', '/', '>', '<', '=', '%', '\0'};
-// clang-format on
 
 /**
 * helpers
@@ -89,7 +76,7 @@ static void ast_collect_tokens(AST *self)
         /**
          * @brief skip over delimiters
          */
-        if (!contains_char(io->buffer[right], DELIMITERS)) {
+        if (!contains_char(io->buffer[right], RUNE_DELIMITERS)) {
             ++right;
             continue;
         }
@@ -103,9 +90,9 @@ static void ast_collect_tokens(AST *self)
                 push_token(&self->_tokens, TOKEN_EOF, io->buffer + right, 0);
                 break;
             }
-            if (contains_char(io->buffer[right], OPERATORS)) {
+            if (contains_char(io->buffer[right], RUNE_OPERATORS)) {
                 push_token(&self->_tokens, TOKEN_OPERATOR, io->buffer + right, 1);
-            } else if (contains_char(io->buffer[right], DELIMITERS) && io->buffer[right] != ' '
+            } else if (contains_char(io->buffer[right], RUNE_DELIMITERS) && io->buffer[right] != ' '
                 && io->buffer[right] != '\n') {
                 push_token(&self->_tokens, TOKEN_DELIMITER, io->buffer + right, 1);
             }
@@ -122,11 +109,11 @@ static void ast_collect_tokens(AST *self)
         const size_t len = right - left;
 
         if (len > 0) {
-            if (contains_any(substr, len, KEYWORDS)) {
+            if (contains_any(substr, len, RUNE_KEYWORDS)) {
                 push_token(&self->_tokens, TOKEN_KEYWORD, substr, len);
             } else if (is_digits(substr, len)) {
                 push_token(&self->_tokens, TOKEN_NUMBER, substr, len);
-            } else if (!isdigit(substr[0]) && !contains_char(substr[0], DELIMITERS)) {
+            } else if (!isdigit(substr[0]) && !contains_char(substr[0], RUNE_DELIMITERS)) {
                 push_token(&self->_tokens, TOKEN_IDENTIFIER, substr, len);
             } else {
                 push_token(&self->_tokens, TOKEN_INVALID, substr, len);
@@ -141,6 +128,86 @@ static void ast_collect_tokens(AST *self)
             token_type_to_string(__token->type), __token->length);
     });
 #endif
+}
+
+/**
+ * show
+ */
+
+static void print_indent(const int depth)
+{
+    for (int i = 0; i < depth; ++i) {
+        putchar(' ');
+        putchar(' ');
+    }
+}
+
+static void print_ast_node(const struct ASTNode *node, const int depth)
+{
+    if (!node)
+        return;
+
+    print_indent(depth);
+
+    switch (node->type) {
+        case AST_FUNCTION_DECLARATION:
+            printf("FunctionDeclaration: %s\n", node->data.function_declaration.name);
+            vector_for_each(node->data.function_declaration.body, struct ASTNode *, child,
+                { print_ast_node(*child, depth + 1); });
+            break;
+
+        case AST_ASSIGNMENT:
+            printf("Assignment: %s\n", node->data.assignment.identifier);
+            print_ast_node(node->data.assignment.value, depth + 1);
+            break;
+
+        case AST_IF_STATEMENT:
+            printf("IfStatement:\n");
+            print_indent(depth + 1);
+            printf("Condition:\n");
+            print_ast_node(node->data.if_statement.condition, depth + 2);
+            print_indent(depth + 1);
+            printf("Body:\n");
+            vector_for_each(node->data.if_statement.body, struct ASTNode *, child,
+                { print_ast_node(*child, depth + 2); });
+            break;
+
+        case AST_EXPRESSION:
+            if (node->data.expression.value) {
+                printf("ExpressionValue: %s\n", node->data.expression.value);
+            } else {
+                printf("ExpressionOp: %s\n", node->data.expression.op);
+                print_ast_node(node->data.expression.left, depth + 1);
+                print_ast_node(node->data.expression.right, depth + 1);
+            }
+            break;
+
+        case AST_CALL:
+            printf("Call: %s\n", node->data.call.name);
+            vector_for_each(node->data.call.args, struct ASTNode *, arg,
+                { print_ast_node(*arg, depth + 1); });
+            break;
+
+        default:
+            printf("Unknown node type\n");
+            break;
+    }
+}
+
+static void ast_show_ast(const AST *self)
+{
+    vector_for_each(self->_nodes, struct ASTNode *, node, { print_ast_node(*node, 0); });
+}
+
+/**
+ * build
+ */
+
+static void ast_build_ast(AST *self)
+{
+    size_t cursor = 0;
+
+    parse_program(self, &cursor, self->_nodes);
 }
 
 /**
@@ -177,6 +244,8 @@ static void ast_ctor(Object *self_ptr, va_list *args)
 
     self->class = AST_getClass();
     self->collect_tokens = ast_collect_tokens;
+    self->build = ast_build_ast;
+    self->show = ast_show_ast;
     io->filename = va_arg(*args, char *);
     assert(_does_exist(io) == true);
 
@@ -193,8 +262,10 @@ static void ast_dtor(Object *self_ptr)
 {
     AST *self = (AST *) self_ptr;
 
-    vector_for_each(self->_nodes, struct ASTNode *, node, { auto_free struct ASTNode *n = *node; });
-    delete ((Vector *) self->_nodes);
     auto_free const char *buffer = (const char *) self->_io.buffer;
+
+    vector_for_each(self->_nodes, struct ASTNode *, node, { auto_free struct ASTNode *n = *node; });
+
+    delete ((Vector *) self->_nodes);
     delete ((Vector *) self->_tokens);
 }

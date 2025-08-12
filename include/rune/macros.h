@@ -37,4 +37,8 @@
     #define defer_(func) __attribute__((cleanup(func)))
 #endif
 
+#ifndef forever
+    #define forever for (;;)
+#endif
+
 #endif

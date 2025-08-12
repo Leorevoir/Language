@@ -52,6 +52,8 @@ typedef struct AST {
     const Class *class;
 
     void (*collect_tokens)(struct AST *self);
+    void (*build)(struct AST *self);
+    void (*show)(const struct AST *self);
 
     struct _IO _io;
     Vector *_tokens;
