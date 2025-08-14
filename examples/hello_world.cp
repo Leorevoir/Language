@@ -1,3 +1,4 @@
+//INFO: working syntax
 /**
 * `main` is the entry point of the program
 *
