@@ -1,4 +1,3 @@
-#include <asm-generic/errno.h>
 #include <assert.h>
 #include <cplus/array.h>
 #include <std/memory/allocate.h>
