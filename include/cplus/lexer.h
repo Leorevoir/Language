@@ -9,16 +9,17 @@
 typedef struct {
     FILE *stream;
     struct stat st;
+    const char *src;
+    char *buff;
 } IOFile;
 
 struct _LexerData {
-    const char *src;
-    const char *buff;
+    IOFile io;
 
-    size_t len;
     size_t pos;
     size_t line;
     size_t col;
+    size_t len;
     Array *tokens;
 };
 
