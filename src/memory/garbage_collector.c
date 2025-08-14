@@ -1,6 +1,6 @@
 #include <std/memory/allocate.h>
 #include <std/memory/garbage_collector.h>
-#include <stdlib.h>
+#include <std/memory/liberate.h>
 
 struct __gc_t *__gc_objects = NULL;
 
@@ -34,9 +34,14 @@ void *_new(const Class *class, ...)
 // clang-format off
 void __gc_cleanup(void)
 {
+    if (!__gc_objects) {
+        return;
+    }
     foreach (struct __gc_t, __gc_objects->next, {
-        free(it);
+        liberate(it);
     })
+    free(__gc_objects);
+    __gc_objects = NULL;
 }// clang-format on
 
 __cplus__ctor static __cplus__used void __gc_initialize(void)

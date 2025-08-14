@@ -1,7 +1,7 @@
 #ifndef C_MEMORY_ALLOCATE_H_
 #define C_MEMORY_ALLOCATE_H_
 
-#include <assert.h>
+#include <std/error/assert.h>
 #include <std/memory/garbage_collector.h>
 #include <stdlib.h>
 
@@ -60,8 +60,9 @@ static __inline void *__gc_reallocate(void *ptr, const size_t size)
     return __gc_get_ptr(new_header);
 }
 
-#define allocate(object, size) assert((object = __gc_allocate(size)) != NULL)
-#define reallocate(object, size) assert((object = __gc_reallocate(object, size)) != NULL)
+#define allocate(object, size) __assert((object = __gc_allocate(size)) != NULL, "allocate failed")
+#define reallocate(object, size) __assert((object = __gc_reallocate(object, size)) != NULL, "reallocate failed")
+
 #define vectorize_size(x) (x ? x * 2 : 8)
 
 #endif /* C_MEMORY_ALLOCATE_H_ */

@@ -1,12 +1,13 @@
 #include <cplus/array.h>
 #include <cplus/lexer.h>
+#include <cplus/token.h>
 
-#include <std/memory/allocate.h>
+#include <std/error/assert.h>
 #include <std/memory/garbage_collector.h>
 
+#include "cplus/macros.h"
 #include "lexer_helper.h"
 
-#include <assert.h>
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -36,104 +37,6 @@ __cplus__used static void lexer_dtor(void *instance);
     memcpy(buff, L->_priv.io.buff + start, n);                                                                         \
     buff[n] = '\0';
 
-typedef enum {
-    TOK_EOF,
-    TOK_ERROR,
-    TOK_IDENT,
-    TOK_INTEGER,
-    TOK_FLOAT,
-    TOK_STRING,
-
-    TOK_DEF,
-    TOK_MODULE,
-    TOK_STRUCT,
-    TOK_FOR,
-    TOK_IN,
-    TOK_FOREVER,
-    TOK_BREAK,
-    TOK_IF,
-    TOK_ELSIF,
-    TOK_ELSE,
-    TOK_RETURN,
-    TOK_CONST,
-    TOK_DEFER,
-    TOK_TRUE,
-    TOK_FALSE,
-    TOK_NULL,
-
-    TOK_LBRACE,
-    TOK_RBRACE,
-    TOK_LPAREN,
-    TOK_RPAREN,
-    TOK_LBRACK,
-    TOK_RBRACK,
-    TOK_SEMI,
-    TOK_COMMA,
-    TOK_COLON,
-    TOK_DOT,
-
-    TOK_PLUS,
-    TOK_MINUS,
-    TOK_STAR,
-    TOK_SLASH,
-    TOK_PERCENT,
-    TOK_PLUSPLUS,
-    TOK_MINUSMINUS,
-    TOK_EQ,
-    TOK_ASSIGN,
-    TOK_NEQ,
-    TOK_LT,
-    TOK_GT,
-    TOK_LE,
-    TOK_GE,
-    TOK_AND,
-    TOK_OR,
-    TOK_NOT,
-    TOK_ARROW,
-    TOK_AT
-} TokenKind;
-
-typedef struct {
-    TokenKind kind;
-    const char *lexeme;
-    size_t line;
-    size_t col;
-} Token;
-
-static __inline Token *_new_token(const TokenKind kind, const char *lexeme, const size_t line, const size_t col)
-{
-    Token *t;
-
-    allocate(t, sizeof(Token));
-    t->kind = kind;
-    t->lexeme = lexeme;
-    t->line = line;
-    t->col = col;
-    return t;
-}
-
-// clang-format off
-typedef struct { const char *kw; TokenKind k; } Kw;
-static const Kw KEYWORDS[] = {
-    {"def", TOK_DEF},
-    {"module", TOK_MODULE},
-    {"struct", TOK_STRUCT},
-    {"for", TOK_FOR},
-    {"in", TOK_IN},
-    {"forever", TOK_FOREVER},
-    {"break", TOK_BREAK},
-    {"if", TOK_IF},
-    {"elsif", TOK_ELSIF},
-    {"else", TOK_ELSE},
-    {"return", TOK_RETURN},
-    {"const", TOK_CONST},
-    {"defer", TOK_DEFER},
-    {"true", TOK_TRUE},
-    {"false", TOK_FALSE},
-    {"null", TOK_NULL},
-    {NULL, 0}
-};
-
 static __cplus__const __inline const TokenKind _lookup_keyword(const char *s)
 {
     for (unsigned int i = 0; KEYWORDS[i].kw != NULL; ++i) {
@@ -144,9 +47,10 @@ static __cplus__const __inline const TokenKind _lookup_keyword(const char *s)
     return TOK_IDENT;
 }
 
+// clang-format off
 static const Class __cplus__used lexer_class = {
     .__size__ = sizeof(Lexer),
-    .__name__ = "Array",
+    .__name__ = "Lexer",
     .__ctor__ = lexer_ctor,
     .__dtor__ = lexer_dtor,
 };
@@ -156,9 +60,14 @@ static const Class __cplus__used lexer_class = {
 * public
 */
 
-__cplus__const __cplus__used const Class *LexerGetClass(void)
+__cplus__const __cplus__used __inline const Class *LexerGetClass(void)
 {
     return &lexer_class;
+}
+
+static __cplus__const __inline const Array *lexer_get_tokens(const Lexer *self)
+{
+    return self->_priv.tokens;
 }
 
 /**
@@ -167,8 +76,8 @@ __cplus__const __cplus__used const Class *LexerGetClass(void)
 
 static __inline void _lexer_file_exists(IOFile *out_io)
 {
-    assert(stat(out_io->src, &out_io->st) == 0);
-    assert(S_ISREG(out_io->st.st_mode) || S_ISLNK(out_io->st.st_mode));
+    __assert(stat(out_io->src, &out_io->st) == 0, "file does not exist");
+    __assert(S_ISREG(out_io->st.st_mode) || S_ISLNK(out_io->st.st_mode), "file is not a regular file or symlink");
 }
 
 static __inline void _lexer_file_read(IOFile *out_io)
@@ -178,7 +87,7 @@ static __inline void _lexer_file_read(IOFile *out_io)
 
     const size_t br = fread(out_io->buff, sizeof(char), (size_t) out_io->st.st_size, out_io->stream);
 
-    assert(br == out_io->st.st_size && !feof(out_io->stream));
+    __assert(br == out_io->st.st_size && !feof(out_io->stream), "failed to read file");
     fclose(out_io->stream);
     out_io->buff[out_io->st.st_size] = '\0';
 }
@@ -617,6 +526,7 @@ static void lexer_ctor(void *instance, va_list *args)
     self->class = LexerGetClass();
     self->start = lexer_start;
     self->show = lexer_show;
+    self->get = lexer_get_tokens;
 
     priv->io.src = va_arg(*args, const char *);
     priv->tokens = (Array *) new (ArrayClass, sizeof(Token), 16);
@@ -628,4 +538,5 @@ static void lexer_ctor(void *instance, va_list *args)
 
 static void lexer_dtor(void __cplus__unused *instance)
 {
+    /* handled by garbage collector */
 }

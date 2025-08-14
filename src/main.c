@@ -1,4 +1,5 @@
 #include <cplus/lexer.h>
+#include <cplus/parser.h>
 #include <std/memory/garbage_collector.h>
 
 int main(const int argc, const char **argv)
@@ -11,6 +12,8 @@ int main(const int argc, const char **argv)
 
     lexer->start(lexer);
     lexer->show(lexer);
+
+    Parser *parser = (Parser *) new (ParserClass, lexer->get(lexer));
 
     return 0;
 }

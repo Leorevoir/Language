@@ -1,0 +1,4 @@
+#ifndef C_PLUS_PARSER_HELPER_H_
+#define C_PLUS_PARSER_HELPER_H_
+
+#endif /* C_PLUS_PARSER_HELPER_H_ */

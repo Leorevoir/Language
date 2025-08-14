@@ -11,7 +11,7 @@ static __inline void __gc_null_ptr(void *out_ptr)
     *in_obj = NULL;
 }
 
-#define defer_null __defer(__gc_null_ptr)
+#define defer_null __cplus__defer(__gc_null_ptr)
 
 static __inline void __gc_free_ptr(void *out_ptr)
 {
@@ -22,5 +22,7 @@ static __inline void __gc_free_ptr(void *out_ptr)
     }
     free(in_ptr);
 }
+
+#define liberate(ptr) __gc_free_ptr(ptr)
 
 #endif /* C_MEMORY_LIBERATE_H_ */
