@@ -3,19 +3,10 @@
 
 #include "parser_helper.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 
 __cplus__used static void parser_ctor(void *instance, va_list *args);
 __cplus__used static void parser_dtor(void *instance);
-
-#define there_is_token while (!check(self, TOK_EOF))
-#define skip_to_next_statement                                                                                         \
-    while (!check(self, TOK_EOF) && !check(self, TOK_SEMI) && !check(self, TOK_DEF) && !check(self, TOK_MODULE)        \
-        && !check(self, TOK_STRUCT))
-
-#define skip_brace while (!check(self, TOK_EOF) && !check(self, TOK_RBRACE))
-#define skip_parantheses while (!check(self, TOK_EOF) && !check(self, TOK_RPAREN))
 
 static void parse_program(Parser *self);
 static void parse_module(Parser *self);
@@ -71,8 +62,7 @@ static void parser_start(Parser *self)
  */
 static void parse_program(Parser *self)
 {
-    there_is_token
-    {
+    while (!check(self, TOK_EOF)) {
         const Token *token = current_token(self);
 
         if (token == NULL) {
@@ -95,8 +85,8 @@ static void parse_program(Parser *self)
         }
 
         if (self->_priv.had_error) {
-            skip_to_next_statement
-            {
+            while (!check(self, TOK_EOF) && !check(self, TOK_SEMI) && !check(self, TOK_DEF) && !check(self, TOK_MODULE)
+                && !check(self, TOK_STRUCT)) {
                 advance(self);
             }
 
@@ -116,8 +106,7 @@ static void parse_module(Parser *self)
     consume(self, TOK_IDENT, "Expected module name");
     consume(self, TOK_LBRACE, "Expected '{'");
 
-    skip_brace
-    {
+    while (!check(self, TOK_EOF) && !check(self, TOK_RBRACE)) {
         const Token *token = current_token(self);
 
         if (token == NULL) {
@@ -159,8 +148,7 @@ static void parse_struct(Parser *self)
     consume(self, TOK_IDENT, "Expected struct name");
     consume(self, TOK_LBRACE, "Expected '{'");
 
-    skip_brace
-    {
+    while (!check(self, TOK_EOF) && !check(self, TOK_RBRACE)) {
         if (check(self, TOK_DEF)) {
             parse_function(self);
         } else if (check(self, TOK_IDENT)) {
@@ -191,8 +179,7 @@ static void parse_function(Parser *self)
     consume(self, TOK_IDENT, "Expected function name");
     consume(self, TOK_LPAREN, "Expected '('");
 
-    skip_parantheses
-    {
+    while (!check(self, TOK_EOF) && !check(self, TOK_RPAREN)) {
         /** @brief class / struct syntax auto assignment `@` */
         if (check(self, TOK_AT)) {
             advance(self);
@@ -239,8 +226,7 @@ static void parse_block(Parser *self)
 {
     consume(self, TOK_LBRACE, "Expected '{'");
 
-    skip_brace
-    {
+    while (!check(self, TOK_EOF) && !check(self, TOK_RBRACE)) {
         parse_statement(self);
     }
 
@@ -428,8 +414,7 @@ static void parse_expression(Parser *self)
                 if (check(self, TOK_LPAREN)) {
                     advance(self);
 
-                    skip_parantheses
-                    {
+                    while (!check(self, TOK_EOF) && !check(self, TOK_RPAREN)) {
                         parse_expression(self);
                         if (check(self, TOK_COMMA)) {
                             advance(self);
