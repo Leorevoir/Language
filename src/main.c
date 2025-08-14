@@ -9,5 +9,8 @@ int main(const int argc, const char **argv)
 
     Lexer *lexer = (Lexer *) new (LexerClass, argv[1]);
 
+    lexer->start(lexer);
+    lexer->show(lexer);
+
     return 0;
 }

@@ -31,7 +31,8 @@ static __inline void array_resize(Array *self, const size_t new_size)
     if (new_size > priv->_capacity) {
         const size_t nc = vectorize_size(new_size);
         const size_t ns = nc * priv->_elem_size;
-        priv->_data = realloc(priv->_data, ns);
+
+        reallocate(priv->_data, ns);
         priv->_capacity = nc;
     }
 }
