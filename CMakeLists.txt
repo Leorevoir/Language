@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(language VERSION 0.0.1 LANGUAGES C)
+project(cplus VERSION 0.0.1 LANGUAGES C)
 
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -18,43 +18,42 @@ endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 file(GLOB_RECURSE SRC_FILES "src/*.c")
-add_executable(language ${SRC_FILES})
+add_executable(cplus ${SRC_FILES})
 
-target_link_libraries(language PRIVATE 
+target_link_libraries(cplus PRIVATE 
     pthread
 )
 
-target_compile_options(language PRIVATE -mavx2)
+target_compile_options(cplus PRIVATE -mavx2)
 
-target_include_directories(language PRIVATE
-    ${CMAKE_SOURCE_DIR}/src
+target_include_directories(cplus PRIVATE
     ${CMAKE_SOURCE_DIR}/include
 )
 
-target_compile_options(language PRIVATE
-    -Wall
-    -Wextra
-    -Werror
-    -pedantic
-    -Wconversion
-    -Wsign-conversion
-    -Wshadow
-    -Wnull-dereference
-    -Wundef
-    -Wuninitialized
-    -Winit-self
-    -Wredundant-decls
-    -Wcast-align
-    -Wcast-qual
-    -Wmissing-declarations
-    -Wswitch-default
-    -Wdouble-promotion
-    -Wformat=2
-    -Wwrite-strings
-)
+# target_compile_options(cplus PRIVATE
+#     -Wall
+#     -Wextra
+#     -Werror
+#     -pedantic
+#     -Wconversion
+#     -Wsign-conversion
+#     -Wshadow
+#     -Wnull-dereference
+#     -Wundef
+#     -Wuninitialized
+#     -Winit-self
+#     -Wredundant-decls
+#     -Wcast-align
+#     -Wcast-qual
+#     -Wmissing-declarations
+#     -Wswitch-default
+#     -Wdouble-promotion
+#     -Wformat=2
+#     -Wwrite-strings
+# )
 
 option(ENABLE_DEBUG "Enable debug macros and flags" OFF)
 
 if(ENABLE_DEBUG)
-    target_compile_definitions(language PRIVATE DEBUG=1)
+    target_compile_definitions(cplus PRIVATE DEBUG=1)
 endif()
