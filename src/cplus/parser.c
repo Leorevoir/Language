@@ -103,8 +103,6 @@ static void parse_program(Parser *self)
             if (check(self, TOK_SEMI)) {
                 advance(self);
             }
-
-            self->_priv.had_error = false;
         }
     }
 }
