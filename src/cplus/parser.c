@@ -40,7 +40,7 @@ __cplus__const __cplus__used __inline const Class *ParserGetClass(void)
 
 static void parser_start(Parser *self)
 {
-    struct _ParserData *priv = &self->_priv;
+    Tokenizer *priv = &self->_priv;
 
     __assert(priv->tokens != NULL, "Tokens array cannot be NULL");
     __assert(priv->tokens->_priv._size > 0, "Tokens array cannot be empty");
@@ -62,8 +62,8 @@ static void parser_start(Parser *self)
  */
 static void parse_program(Parser *self)
 {
-    while (!check(self, TOK_EOF)) {
-        const Token *token = current_token(self);
+    while (!check(&self->_priv, TOK_EOF)) {
+        const Token *token = current_token(&self->_priv);
 
         if (token == NULL) {
             break;
@@ -85,13 +85,13 @@ static void parse_program(Parser *self)
         }
 
         if (self->_priv.had_error) {
-            while (!check(self, TOK_EOF) && !check(self, TOK_SEMI) && !check(self, TOK_DEF) && !check(self, TOK_MODULE)
-                && !check(self, TOK_STRUCT)) {
-                advance(self);
+            while (!check(&self->_priv, TOK_EOF) && !check(&self->_priv, TOK_SEMI) && !check(&self->_priv, TOK_DEF)
+                && !check(&self->_priv, TOK_MODULE) && !check(&self->_priv, TOK_STRUCT)) {
+                advance(&self->_priv);
             }
 
-            if (check(self, TOK_SEMI)) {
-                advance(self);
+            if (check(&self->_priv, TOK_SEMI)) {
+                advance(&self->_priv);
             }
         }
     }
@@ -102,12 +102,12 @@ static void parse_program(Parser *self)
  */
 static void parse_module(Parser *self)
 {
-    consume(self, TOK_MODULE, "Expected 'module'");
-    consume(self, TOK_IDENT, "Expected module name");
-    consume(self, TOK_LBRACE, "Expected '{'");
+    consume(&self->_priv, TOK_MODULE, "Expected 'module'");
+    consume(&self->_priv, TOK_IDENT, "Expected module name");
+    consume(&self->_priv, TOK_LBRACE, "Expected '{'");
 
-    while (!check(self, TOK_EOF) && !check(self, TOK_RBRACE)) {
-        const Token *token = current_token(self);
+    while (!check(&self->_priv, TOK_EOF) && !check(&self->_priv, TOK_RBRACE)) {
+        const Token *token = current_token(&self->_priv);
 
         if (token == NULL) {
             break;
@@ -126,7 +126,7 @@ static void parse_module(Parser *self)
         }
     }
 
-    consume(self, TOK_RBRACE, "Expected '}'");
+    consume(&self->_priv, TOK_RBRACE, "Expected '}'");
 }
 
 /**
@@ -144,25 +144,25 @@ static void parse_module(Parser *self)
  */
 static void parse_struct(Parser *self)
 {
-    consume(self, TOK_STRUCT, "Expected 'struct'");
-    consume(self, TOK_IDENT, "Expected struct name");
-    consume(self, TOK_LBRACE, "Expected '{'");
+    consume(&self->_priv, TOK_STRUCT, "Expected 'struct'");
+    consume(&self->_priv, TOK_IDENT, "Expected struct name");
+    consume(&self->_priv, TOK_LBRACE, "Expected '{'");
 
-    while (!check(self, TOK_EOF) && !check(self, TOK_RBRACE)) {
-        if (check(self, TOK_DEF)) {
+    while (!check(&self->_priv, TOK_EOF) && !check(&self->_priv, TOK_RBRACE)) {
+        if (check(&self->_priv, TOK_DEF)) {
             parse_function(self);
-        } else if (check(self, TOK_IDENT)) {
-            advance(self);
-            consume(self, TOK_COLON, "Expected ':'");
-            consume(self, TOK_IDENT, "Expected type");
-            consume(self, TOK_SEMI, "Expected ';'");
+        } else if (check(&self->_priv, TOK_IDENT)) {
+            advance(&self->_priv);
+            consume(&self->_priv, TOK_COLON, "Expected ':'");
+            consume(&self->_priv, TOK_IDENT, "Expected type");
+            consume(&self->_priv, TOK_SEMI, "Expected ';'");
         } else {
-            error(self, "Expected field or method declaration");
-            advance(self);
+            error(&self->_priv, "Expected field or method declaration");
+            advance(&self->_priv);
         }
     }
 
-    consume(self, TOK_RBRACE, "Expected '}'");
+    consume(&self->_priv, TOK_RBRACE, "Expected '}'");
 }
 
 /**
@@ -175,42 +175,42 @@ static void parse_struct(Parser *self)
  */
 static void parse_function(Parser *self)
 {
-    consume(self, TOK_DEF, "Expected 'def'");
-    consume(self, TOK_IDENT, "Expected function name");
-    consume(self, TOK_LPAREN, "Expected '('");
+    consume(&self->_priv, TOK_DEF, "Expected 'def'");
+    consume(&self->_priv, TOK_IDENT, "Expected function name");
+    consume(&self->_priv, TOK_LPAREN, "Expected '('");
 
-    while (!check(self, TOK_EOF) && !check(self, TOK_RPAREN)) {
+    while (!check(&self->_priv, TOK_EOF) && !check(&self->_priv, TOK_RPAREN)) {
         /** @brief class / struct syntax auto assignment `@` */
-        if (check(self, TOK_AT)) {
-            advance(self);
-            consume(self, TOK_IDENT, "Expected parameter name");
+        if (check(&self->_priv, TOK_AT)) {
+            advance(&self->_priv);
+            consume(&self->_priv, TOK_IDENT, "Expected parameter name");
         } else {
             /** @brief regular param syntax */
-            consume(self, TOK_IDENT, "Expected parameter name");
-            if (check(self, TOK_COLON)) {
-                advance(self);
-                consume(self, TOK_IDENT, "Expected parameter type");
+            consume(&self->_priv, TOK_IDENT, "Expected parameter name");
+            if (check(&self->_priv, TOK_COLON)) {
+                advance(&self->_priv);
+                consume(&self->_priv, TOK_IDENT, "Expected parameter type");
             }
         }
 
         /** @brief check for multiple parameters */
-        if (check(self, TOK_COMMA)) {
-            advance(self);
-        } else if (!check(self, TOK_RPAREN)) {
-            error(self, "Expected ',' or ')'");
+        if (check(&self->_priv, TOK_COMMA)) {
+            advance(&self->_priv);
+        } else if (!check(&self->_priv, TOK_RPAREN)) {
+            error(&self->_priv, "Expected ',' or ')'");
             break;
         }
     }
 
-    consume(self, TOK_RPAREN, "Expected ')'");
+    consume(&self->_priv, TOK_RPAREN, "Expected ')'");
 
     /** @brief return type -> int */
-    if (check(self, TOK_ARROW)) {
-        advance(self);
-        if (check(self, TOK_NULL)) {
-            advance(self);
+    if (check(&self->_priv, TOK_ARROW)) {
+        advance(&self->_priv);
+        if (check(&self->_priv, TOK_NULL)) {
+            advance(&self->_priv);
         } else {
-            consume(self, TOK_IDENT, "Expected return type");
+            consume(&self->_priv, TOK_IDENT, "Expected return type");
         }
     }
 
@@ -224,13 +224,13 @@ static void parse_function(Parser *self)
 */
 static void parse_block(Parser *self)
 {
-    consume(self, TOK_LBRACE, "Expected '{'");
+    consume(&self->_priv, TOK_LBRACE, "Expected '{'");
 
-    while (!check(self, TOK_EOF) && !check(self, TOK_RBRACE)) {
+    while (!check(&self->_priv, TOK_EOF) && !check(&self->_priv, TOK_RBRACE)) {
         parse_statement(self);
     }
 
-    consume(self, TOK_RBRACE, "Expected '}'");
+    consume(&self->_priv, TOK_RBRACE, "Expected '}'");
 }
 
 /**
@@ -240,7 +240,7 @@ static void parse_block(Parser *self)
  */
 static void parse_statement(Parser *self)
 {
-    const Token *token = current_token(self);
+    const Token *token = current_token(&self->_priv);
 
     if (token == NULL) {
         return;
@@ -260,47 +260,47 @@ static void parse_statement(Parser *self)
             parse_return_statement(self);
             break;
         case TOK_BREAK:
-            advance(self);
-            if (check(self, TOK_IF)) {
-                advance(self);
+            advance(&self->_priv);
+            if (check(&self->_priv, TOK_IF)) {
+                advance(&self->_priv);
                 parse_expression(self);
             }
-            consume(self, TOK_SEMI, "Expected ';'");
+            consume(&self->_priv, TOK_SEMI, "Expected ';'");
             break;
         case TOK_PLUSPLUS:
-            advance(self);
-            consume(self, TOK_IDENT, "Expected identifier");
-            consume(self, TOK_SEMI, "Expected ';'");
+            advance(&self->_priv);
+            consume(&self->_priv, TOK_IDENT, "Expected identifier");
+            consume(&self->_priv, TOK_SEMI, "Expected ';'");
             break;
         case TOK_IDENT:
-            advance(self);
+            advance(&self->_priv);
 
             /** @brief assignment ... */
-            if (check(self, TOK_ASSIGN)) {
-                advance(self);
+            if (check(&self->_priv, TOK_ASSIGN)) {
+                advance(&self->_priv);
                 parse_expression(self);
-            } else if (check(self, TOK_LPAREN)) {
+            } else if (check(&self->_priv, TOK_LPAREN)) {
 
                 /** @brief ... or function call */
-                advance(self);
-                while (!check(self, TOK_RPAREN) && !check(self, TOK_EOF)) {
+                advance(&self->_priv);
+                while (!check(&self->_priv, TOK_RPAREN) && !check(&self->_priv, TOK_EOF)) {
                     parse_expression(self);
-                    if (check(self, TOK_COMMA)) {
-                        advance(self);
-                    } else if (!check(self, TOK_RPAREN)) {
+                    if (check(&self->_priv, TOK_COMMA)) {
+                        advance(&self->_priv);
+                    } else if (!check(&self->_priv, TOK_RPAREN)) {
                         break;
                     }
                 }
-                consume(self, TOK_RPAREN, "Expected ')'");
+                consume(&self->_priv, TOK_RPAREN, "Expected ')'");
             }
-            consume(self, TOK_SEMI, "Expected ';'");
+            consume(&self->_priv, TOK_SEMI, "Expected ';'");
             break;
         case TOK_LBRACE:
             parse_block(self);
             break;
         default:
-            error(self, "Unexpected token in statement");
-            advance(self);
+            error(&self->_priv, "Unexpected token in statement");
+            advance(&self->_priv);
             break;
     }
 }
@@ -318,9 +318,9 @@ static void parse_statement(Parser *self)
  */
 static void parse_for_statement(Parser *self)
 {
-    consume(self, TOK_FOR, "Expected 'for'");
-    consume(self, TOK_IDENT, "Expected loop variable");
-    consume(self, TOK_IN, "Expected 'in'");
+    consume(&self->_priv, TOK_FOR, "Expected 'for'");
+    consume(&self->_priv, TOK_IDENT, "Expected loop variable");
+    consume(&self->_priv, TOK_IN, "Expected 'in'");
     parse_expression(self);
     parse_block(self);
 }
@@ -336,7 +336,7 @@ static void parse_for_statement(Parser *self)
  */
 static void parse_forever_statement(Parser *self)
 {
-    consume(self, TOK_FOREVER, "Expected 'forever'");
+    consume(&self->_priv, TOK_FOREVER, "Expected 'forever'");
     parse_block(self);
 }
 
@@ -355,18 +355,18 @@ static void parse_forever_statement(Parser *self)
  */
 static void parse_if_statement(Parser *self)
 {
-    consume(self, TOK_IF, "Expected 'if'");
+    consume(&self->_priv, TOK_IF, "Expected 'if'");
     parse_expression(self);
     parse_block(self);
 
-    while (check(self, TOK_ELSIF)) {
-        advance(self);
+    while (check(&self->_priv, TOK_ELSIF)) {
+        advance(&self->_priv);
         parse_expression(self);
         parse_block(self);
     }
 
-    if (check(self, TOK_ELSE)) {
-        advance(self);
+    if (check(&self->_priv, TOK_ELSE)) {
+        advance(&self->_priv);
         parse_block(self);
     }
 }
@@ -381,11 +381,11 @@ static void parse_if_statement(Parser *self)
  */
 static void parse_return_statement(Parser *self)
 {
-    consume(self, TOK_RETURN, "Expected 'return'");
-    if (!check(self, TOK_SEMI)) {
+    consume(&self->_priv, TOK_RETURN, "Expected 'return'");
+    if (!check(&self->_priv, TOK_SEMI)) {
         parse_expression(self);
     }
-    consume(self, TOK_SEMI, "Expected ';'");
+    consume(&self->_priv, TOK_SEMI, "Expected ';'");
 }
 
 /**
@@ -395,7 +395,7 @@ static void parse_return_statement(Parser *self)
  */
 static void parse_expression(Parser *self)
 {
-    const Token *token = current_token(self);
+    const Token *token = current_token(&self->_priv);
 
     if (token == NULL) {
         return;
@@ -404,30 +404,30 @@ static void parse_expression(Parser *self)
     switch (token->kind) {
 
         case TOK_IDENT:
-            advance(self);
+            advance(&self->_priv);
 
             /**
              * @brief handles function calls, member access, and other expressions
              */
-            while (check(self, TOK_LPAREN) || check(self, TOK_DOT)) {
+            while (check(&self->_priv, TOK_LPAREN) || check(&self->_priv, TOK_DOT)) {
 
-                if (check(self, TOK_LPAREN)) {
-                    advance(self);
+                if (check(&self->_priv, TOK_LPAREN)) {
+                    advance(&self->_priv);
 
-                    while (!check(self, TOK_EOF) && !check(self, TOK_RPAREN)) {
+                    while (!check(&self->_priv, TOK_EOF) && !check(&self->_priv, TOK_RPAREN)) {
                         parse_expression(self);
-                        if (check(self, TOK_COMMA)) {
-                            advance(self);
-                        } else if (!check(self, TOK_RPAREN)) {
+                        if (check(&self->_priv, TOK_COMMA)) {
+                            advance(&self->_priv);
+                        } else if (!check(&self->_priv, TOK_RPAREN)) {
                             break;
                         }
                     }
 
-                    consume(self, TOK_RPAREN, "Expected ')'");
+                    consume(&self->_priv, TOK_RPAREN, "Expected ')'");
 
-                } else if (check(self, TOK_DOT)) {
-                    advance(self);
-                    consume(self, TOK_IDENT, "Expected member name");
+                } else if (check(&self->_priv, TOK_DOT)) {
+                    advance(&self->_priv);
+                    consume(&self->_priv, TOK_IDENT, "Expected member name");
                 }
             }
             break;
@@ -438,27 +438,27 @@ static void parse_expression(Parser *self)
         case TOK_TRUE:
         case TOK_FALSE:
         case TOK_NULL:
-            advance(self);
+            advance(&self->_priv);
             break;
 
         case TOK_LPAREN:
-            advance(self);
+            advance(&self->_priv);
             parse_expression(self);
-            consume(self, TOK_RPAREN, "Expected ')'");
+            consume(&self->_priv, TOK_RPAREN, "Expected ')'");
             break;
 
         default:
-            advance(self);
+            advance(&self->_priv);
             break;
     }
 
     /** @brief handles operators and expressions */
-    token = current_token(self);
+    token = current_token(&self->_priv);
     if (token
         && (token->kind == TOK_PLUS || token->kind == TOK_MINUS || token->kind == TOK_STAR || token->kind == TOK_SLASH
             || token->kind == TOK_EQ || token->kind == TOK_NEQ || token->kind == TOK_LT || token->kind == TOK_GT
             || token->kind == TOK_LE || token->kind == TOK_GE || token->kind == TOK_AND || token->kind == TOK_OR)) {
-        advance(self);
+        advance(&self->_priv);
         parse_expression(self);
     }
 }
@@ -470,7 +470,7 @@ static void parse_expression(Parser *self)
 static void parser_ctor(void *instance, va_list *args)
 {
     Parser *self = (Parser *) instance;
-    struct _ParserData *priv = &self->_priv;
+    Tokenizer *priv = &self->_priv;
 
     self->class = ParserGetClass();
     self->start = parser_start;

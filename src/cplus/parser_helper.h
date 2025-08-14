@@ -5,36 +5,30 @@
 #include <cplus/parser.h>
 #include <cplus/token.h>
 
-static __cplus__const __inline const Token *current_token(const Parser *self)
+static __cplus__const __inline const Token *current_token(const Tokenizer *self)
 {
-    const struct _ParserData *priv = &self->_priv;
-
-    if (priv->current >= priv->tokens->_priv._size) {
+    if (self->current >= self->tokens->_priv._size) {
         return NULL;
     }
-    return (Token *) priv->tokens->at(priv->tokens, priv->current);
+    return (const Token *) self->tokens->at(self->tokens, self->current);
 }
 
-static __cplus__const __inline const Token *peek_token(const Parser *self)
+static __cplus__const __inline const Token *peek_token(const Tokenizer *self)
 {
-    const struct _ParserData *priv = &self->_priv;
-
-    if (priv->current + 1 >= priv->tokens->_priv._size) {
+    if (self->current + 1 >= self->tokens->_priv._size) {
         return NULL;
     }
-    return (Token *) priv->tokens->at(priv->tokens, priv->current + 1);
+    return (const Token *) self->tokens->at(self->tokens, self->current + 1);
 }
 
-static __inline void advance(Parser *self)
+static __inline void advance(Tokenizer *self)
 {
-    struct _ParserData *priv = &self->_priv;
-
-    if (priv->current < priv->tokens->_priv._size) {
-        ++priv->current;
+    if (self->current < self->tokens->_priv._size) {
+        ++self->current;
     }
 }
 
-static __cplus__const __inline bool check(const Parser *self, const TokenKind kind)
+static __cplus__const __inline bool check(const Tokenizer *self, const TokenKind kind)
 {
     const Token *token = current_token(self);
 
@@ -44,9 +38,8 @@ static __cplus__const __inline bool check(const Parser *self, const TokenKind ki
     return token->kind == kind;
 }
 
-static void error(Parser *self, const char *message)
+static void error(Tokenizer *self, const char *message)
 {
-    struct _ParserData *priv = &self->_priv;
     const Token *token = current_token(self);
 
     if (token) {
@@ -57,10 +50,10 @@ static void error(Parser *self, const char *message)
         fprintf(stderr, "%sPARSE ERROR%s at end of file: %s\n", CPLUS_LOG_RED, CPLUS_LOG_RESET, message);
     }
 
-    priv->had_error = true;
+    self->had_error = true;
 }
 
-static __inline bool match(Parser *self, TokenKind kind)
+static __inline bool match(Tokenizer *self, TokenKind kind)
 {
     if (check(self, kind)) {
         advance(self);
@@ -69,7 +62,7 @@ static __inline bool match(Parser *self, TokenKind kind)
     return false;
 }
 
-static void consume(Parser *self, TokenKind kind, const char *message)
+static void consume(Tokenizer *self, TokenKind kind, const char *message)
 {
     if (check(self, kind)) {
         advance(self);

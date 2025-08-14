@@ -1,8 +1,10 @@
 #ifndef C_PLUS_TOKEN_H_
 #define C_PLUS_TOKEN_H_
 
+#include <cplus/array.h>
 #include <std/memory/allocate.h>
 
+#include <stdbool.h>
 #include <stddef.h>
 
 typedef enum {
@@ -68,6 +70,12 @@ typedef struct {
     size_t line;
     size_t col;
 } Token;
+
+typedef struct {
+    const Array *tokens;
+    size_t current;
+    bool had_error;
+} Tokenizer;
 
 static __inline Token *_new_token(const TokenKind kind, const char *lexeme, const size_t line, const size_t col)
 {

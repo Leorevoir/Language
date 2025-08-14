@@ -2,7 +2,7 @@
 #define C_PLUS_AST_H_
 
 #include <cplus/array.h>
-#include <cplus/interface.h>
+#include <cplus/token.h>
 #include <stdbool.h>
 
 /**
@@ -77,32 +77,32 @@ typedef struct {
 } ASTProgram;
 
 typedef struct {
-    char *name;
+    const char *name;
     Array *children;
 } ASTModule;
 
 typedef struct {
-    char *name;
-    Array *parameters;// Array of ASTNode* (AST_PARAMETER)
-    char *return_type;// NULL for void/null
-    ASTNode *body;    // AST_BLOCK
+    const char *name;
+    Array *parameters;      // Array of ASTNode* (AST_PARAMETER)
+    const char *return_type;// NULL for void/null
+    ASTNode *body;          // AST_BLOCK
 } ASTFunction;
 
 typedef struct {
-    char *name;
+    const char *name;
     Array *fields; // Array of ASTNode* (AST_FIELD)
     Array *methods;// Array of ASTNode* (AST_FUNCTION)
 } ASTStruct;
 
 typedef struct {
-    char *name;
-    char *type;         // NULL if type inference
+    const char *name;
+    const char *type;   // NULL if type inference
     bool is_auto_assign;// true for @param
 } ASTParameter;
 
 typedef struct {
-    char *name;
-    char *type;
+    const char *name;
+    const char *type;
 } ASTField;
 
 typedef struct {
@@ -117,7 +117,7 @@ typedef struct {
 } ASTIfStatement;
 
 typedef struct {
-    char *variable;
+    const char *variable;
     ASTNode *iterable;
     ASTNode *body;
 } ASTForStatement;
@@ -139,7 +139,7 @@ typedef struct {
 } ASTExpressionStatement;
 
 typedef struct {
-    char *variable;
+    const char *variable;
     ASTNode *value;
 } ASTAssignment;
 
@@ -161,11 +161,11 @@ typedef struct {
 
 typedef struct {
     ASTNode *object;
-    char *member;
+    const char *member;
 } ASTMemberAccess;
 
 typedef struct ASTIdentifier {
-    char *name;
+    const char *name;
 } ASTIdentifier;
 
 typedef struct {
@@ -177,7 +177,7 @@ typedef struct {
 } ASTLiteralFloat;
 
 typedef struct {
-    char *value;
+    const char *value;
 } ASTLiteralString;
 
 typedef struct {
@@ -226,8 +226,8 @@ typedef struct ASTBuilder {
     void (*build)(struct ASTBuilder *self);
     void (*show)(const struct ASTBuilder *self);
 
-    Array *nodes;       // array of ASTNode*
-    const Array *tokens;//(const) Array of parsed tokens
+    Array *nodes;// array of ASTNode*
+    Tokenizer _priv;
 } ASTBuilder;
 
 __cplus__const const Class *ASTBuilderGetClass(void);

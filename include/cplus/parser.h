@@ -3,20 +3,15 @@
 
 #include <cplus/array.h>
 #include <cplus/interface.h>
+#include <cplus/token.h>
 
 #include <stdbool.h>
-
-struct _ParserData {
-    const Array *tokens;
-    size_t current;
-    bool had_error;
-};
 
 typedef struct Parser {
     const Class *class;
 
     void (*start)(struct Parser *self);
-    struct _ParserData _priv;
+    Tokenizer _priv;
 } Parser;
 
 __cplus__const const Class *ParserGetClass(void);
