@@ -47,13 +47,13 @@ static __inline void *__gc_reallocate(void *ptr, const size_t size)
     if (new_header != old_header) {
         struct __gc_t **prev = &__gc_objects;
 
-        while (*prev && *prev != old_header) {
-            prev = &(*prev)->next;
-        }
-
-        if (*prev) {
-            *prev = new_header;
-        }
+        foreach (struct __gc_t, *prev, {
+            if (it == old_header) {
+                *prev = new_header;
+                break;
+            }
+            prev = &it->next;
+        })
     }
 
     new_header->size = size;
