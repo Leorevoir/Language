@@ -1,6 +1,7 @@
-#include <assert.h>
 #include <cplus/array.h>
+#include <std/error/assert.h>
 #include <std/memory/allocate.h>
+
 #include <string.h>
 
 __cplus__used static void array_ctor(void *instance, va_list *args);
@@ -95,9 +96,9 @@ static __inline void array_clear(Array *self)
     priv->_size = 0;
 }
 
-static __inline void *array_at(Array *self, const size_t index)
+static __inline void *array_at(const Array *self, const size_t index)
 {
-    assert(index < self->_priv._size);
+    __assert(index < self->_priv._size, "index out of bounds");
     return (char *) self->_priv._data + index * self->_priv._elem_size;
 }
 

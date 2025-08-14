@@ -28,6 +28,7 @@ typedef struct Lexer {
 
     void (*start)(struct Lexer *self);
     void (*show)(const struct Lexer *self);
+    const Array *(*get)(const struct Lexer *self);
 
     struct _LexerData _priv;
 } Lexer;
