@@ -602,7 +602,7 @@ __cplus__const static const char *_to_string(TokenKind k)
 
 static __inline void lexer_show(const struct Lexer *self)
 {
-    array_foreach(self->_priv.tokens, Token, t, { printf("[%zu:%zu] %-8s\n", t->line, t->col, _to_string(t->kind)); })
+    array_foreach(self->_priv.tokens, Token, t, { printf("[%zu:%zu]\t%-8s\n", t->line, t->col, _to_string(t->kind)); })
 }
 
 /**
@@ -620,8 +620,8 @@ static void lexer_ctor(void *instance, va_list *args)
 
     priv->io.src = va_arg(*args, const char *);
     priv->tokens = (Array *) new (ArrayClass, sizeof(Token), 16);
-    priv->line = 0;
-    priv->col = 0;
+    priv->line = 1;
+    priv->col = 1;
     priv->pos = 0;
     priv->len = 0;
 }
