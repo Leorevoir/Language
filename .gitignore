@@ -59,3 +59,4 @@ language
 .clang-format
 console.log
 *.cc
+.ruby-lsp
