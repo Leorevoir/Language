@@ -26,7 +26,7 @@
 
 - [x] Define base syntax [**here**](../examples/syntax.cp)
 - [x] Build a Lexer [**here**](../include/cplus/lexer.h)
-- [ ] Build a Parser
+- [x] Build a Parser
 - [ ] Build grammar rules like `EBNF`
 - [ ] Semantic Analysis (type checking, resolution...)
 - [ ] Intermediate Representation (IR) & Optimizations
