@@ -4,16 +4,18 @@
 #include <cplus/array.h>
 #include <cplus/interface.h>
 
+#include <stdbool.h>
+
 struct _ParserData {
     const Array *tokens;
+    size_t current;
+    bool had_error;
 };
 
 typedef struct Parser {
     const Class *class;
 
     void (*start)(struct Parser *self);
-    void (*show)(const struct Parser *self);
-
     struct _ParserData _priv;
 } Parser;
 

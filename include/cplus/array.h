@@ -22,7 +22,7 @@ typedef struct Array {
     void (*remove)(struct Array *self, size_t index);
     void (*clear)(struct Array *self);
     void (*resize)(struct Array *self, size_t new_size);
-    void *(*at)(struct Array *self, size_t index);
+    void *(*at)(const struct Array *self, size_t index);
 
     struct _ArrayData _priv;
 } Array;
@@ -30,10 +30,10 @@ typedef struct Array {
 __cplus__const const Class *ArrayGetClass(void);
 #define ArrayClass ArrayGetClass()
 
-#define array_foreach(array, type, var, code)                                                      \
-    for (size_t __i = 0; __i < (array)->_priv._size; ++__i) {                                      \
-        type *var = (type *) array->at(array, __i);                                                \
-        code;                                                                                      \
+#define array_foreach(array, type, var, code)                                                                          \
+    for (size_t __i = 0; __i < (array)->_priv._size; ++__i) {                                                          \
+        type *var = (type *) array->at(array, __i);                                                                    \
+        code;                                                                                                          \
     }
 
 #endif /* C_PLUS_ARRAY_H_ */

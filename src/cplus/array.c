@@ -96,7 +96,7 @@ static __inline void array_clear(Array *self)
     priv->_size = 0;
 }
 
-static __inline void *array_at(Array *self, const size_t index)
+static __inline void *array_at(const Array *self, const size_t index)
 {
     __assert(index < self->_priv._size, "index out of bounds");
     return (char *) self->_priv._data + index * self->_priv._elem_size;
