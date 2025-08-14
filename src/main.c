@@ -1,3 +1,4 @@
+#include "cplus/ast.h"
 #include <cplus/lexer.h>
 #include <cplus/parser.h>
 #include <std/error/assert.h>
@@ -15,6 +16,11 @@ int main(const int argc, const char **argv)
     Parser *parser = (Parser *) new (ParserClass, lexer->get(lexer));
 
     parser->start(parser);
+
+    ASTBuilder *ast = (ASTBuilder *) new (ASTBuilderClass, lexer->get(lexer));
+
+    ast->build(ast);
+    ast->show(ast);
 
     return 0;
 }
